@@ -1,20 +1,98 @@
 #include "polinom.h"
 
+class Polinom::ImP{
+    private:
+        int power; // степень полинома
+        double *coefficient; // массив коэффициентов
+    public:
+        explicit ImP (int power);
+        ~ImP();
+        ImP(const ImP &org);
+        ImP operator*(const ImP &org);
+        ImP operator+(const ImP &org);
+        ImP &operator=(const ImP &org);
+        ImP derivative(const ImP &org);
+        ImP integral(const ImP &org);
+        int get_power()const;
+        double *get_coef()const;
 
-Polinom::Polinom(int a):
+};
+
+Polinom::Polinom(int power):
+   pimpl(0)
+{
+   pimpl = new ImP(power);
+}
+
+Polinom::Polinom(const Polinom &org):
+   pimpl(0)
+{
+   pimpl = new ImP(*(org.pimpl));
+}
+
+Polinom::Polinom(const ImP &org):
+   pimpl(0)
+{
+   pimpl = new ImP(org);
+}
+
+Polinom &Polinom::operator=(const Polinom &org)
+{
+   *(this->pimpl) = *(org.pimpl);
+   return *this;
+}
+
+Polinom Polinom::operator+(const Polinom &org)
+{
+    return Polinom(pimpl->operator+(*(org.pimpl)));
+}
+
+Polinom Polinom::operator*(const Polinom &org)
+{
+
+    return Polinom(pimpl->operator*(*(org.pimpl)));
+}
+
+Polinom Polinom::derivative(const Polinom &org)
+{
+    return Polinom(pimpl->derivative(*(org.pimpl)));
+}
+Polinom Polinom::integral(const Polinom &org)
+{
+    return Polinom(pimpl->integral(*(org.pimpl)));
+}
+
+Polinom::~Polinom()
+{
+   delete pimpl;
+   pimpl = 0;
+}
+
+int Polinom::get_power()const
+{
+   return pimpl->get_power();
+}
+
+double *Polinom::get_coef()const
+{
+   return pimpl->get_coef();
+}
+/////////////////////////////////////////////////////////////
+
+Polinom::ImP::ImP(int a):
     power(a), coefficient(0)
 {
-    coefficient=NULL;
+    coefficient=0;
     coefficient=new double[power+1];
 };
 
-Polinom::~Polinom()
+Polinom::ImP::~ImP()
 {
     delete [] coefficient;
     coefficient=0;
 }
 
-Polinom::Polinom(const Polinom &org):
+Polinom::ImP::ImP(const ImP &org):
     power(org.power),coefficient(0)
 {
     coefficient=new double[power+1];
@@ -22,7 +100,7 @@ Polinom::Polinom(const Polinom &org):
         coefficient[i]=org.coefficient[i];
 }
 
-Polinom &Polinom::operator=(const Polinom &org)
+Polinom::ImP &Polinom::ImP::operator=(const ImP &org)
 {
     if(this==&org)
         return *this;
@@ -34,102 +112,80 @@ Polinom &Polinom::operator=(const Polinom &org)
     return *this;
 }
 
-Polinom Polinom::operator+(const Polinom &add)
+Polinom::ImP Polinom::ImP::operator+(const ImP &org)
 {
-    Polinom temp(power);
-    if(power==add.power)
+    int max_power;
+    max_power=power>org.power?power:org.power;
+
+    ImP temp(max_power);
+    if(power==org.power)
     {
-        for(int i=add.power; i>=0; --i)
-            temp.coefficient[i]=coefficient[i]+add.coefficient[i];
+        for(int i=org.power; i>=0; --i)
+            temp.coefficient[i]=coefficient[i]+org.coefficient[i];
         return temp;
     }
-    if(power<add.power)
+    if(power<org.power)
     {
         for(int i=power; i>=0; i--)
-            temp.coefficient[i]=coefficient[i]+add.coefficient[i];
-        for(int i=add.power; i>=power+1; --i)
-            temp.coefficient[i]=add.coefficient[i];
+            temp.coefficient[i]=coefficient[i]+org.coefficient[i];
+        for(int i=org.power; i>=power+1; --i)
+            temp.coefficient[i]=org.coefficient[i];
         return temp;
     }
-    if(power>add.power)
+    if(power>org.power)
     {
-        for(int i=add.power; i>=0; i--)
-            temp.coefficient[i]=coefficient[i]+add.coefficient[i];
-        for(int i=power; i>=add.power+1; --i)
+        for(int i=org.power; i>=0; i--)
+            temp.coefficient[i]=coefficient[i]+org.coefficient[i];
+        for(int i=power; i>=org.power+1; --i)
             temp.coefficient[i]=coefficient[i];
         return temp;
     }
     return *this;
 }
 
-Polinom Polinom::operator*(const Polinom& a)
+Polinom::ImP Polinom::ImP::operator*(const ImP &org)
 {
-    Polinom temp(power+a.power);
+    ImP temp(power+org.power);
     for(int i=power; i>=0; --i)
-        for(int j=a.power; j>=0; --j)
-            temp.coefficient[i+j]+=coefficient[i]*a.coefficient[j];
+        for(int j=org.power; j>=0; --j)
+            temp.coefficient[i+j]+=coefficient[i]*org.coefficient[j];
     return temp;
 
 }
-Polinom &Polinom::derivative(Polinom temp)
+
+Polinom::ImP Polinom::ImP::derivative(const ImP &org)
 {
-    Polinom result(power);
-    int  k=temp.power;
-    int j=temp.power;
-    temp.coefficient=new double[k+1];
-
-    for ( int i=temp.power-1; i>=0; --i)
-    {
-        temp.coefficient[i]=temp.coefficient[j]*j;
-        --j ;
-
-    }
-    return result;
-}
-
-/*double derivative ( double *coefficient, int power, double *temp )
-{
-    int k=power;
+    ImP temp(power-1);
     int j=power;
-    for (int i=k-1; i>=0; --i)
+    for (int i=power-1; i>=0; --i)
     {
-        temp[i]=coefficient[j]*j;
+        temp.coefficient[i]=org.coefficient[j]*j;
         --j ;
     }
-    return *temp;
-}*/
-
-
-
-std::ostream& operator<<(std::ostream &out, const Polinom &coef)
-{
-    for(int i=coef.power; i>=0; --i)
-    {
-        switch(i)
-        {
-        case 0:
-            out<<coef.coefficient[i];
-            break;
-        case 1:
-            out<<coef.coefficient[i]<<"x"<<"+";
-            break;
-        default:
-            out<<coef.coefficient[i]<<"x^"<<i<<"+";
-            break;
-        }
-    }
-    out<<"\n";
-    return out;
+    return temp;
 }
 
-std::istream& operator>>(std::istream &in, const Polinom &coef)
+Polinom::ImP Polinom::ImP::integral(const ImP &org)
 {
-    for(int i=coef.power; i>=0; --i)
+    ImP temp(power+1);
+    int j=power;
+    for (int i=power+1; i>0; --i)
     {
-        std::cout<<"x^"<<i<<":";
-        in>>coef.coefficient[i];
+        temp.coefficient[i]=org.coefficient[j]/(j+1);
+        --j ;
     }
-    return in;
+    return temp;
 }
+
+int Polinom::ImP::get_power()const
+{
+   return power;
+}
+
+double *Polinom::ImP::get_coef()const
+{
+   return coefficient;
+}
+
 
 

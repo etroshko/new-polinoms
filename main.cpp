@@ -3,149 +3,133 @@
 
 using namespace std;
 
-/*double addition ( double *coefficient1,double *coefficient2, int power1, int power2, double *sum)
+class ConP: private Polinom
 {
-    int i, j;
-    if(power1>power2)
-    {
-        for(i=0; i<power2+1; i++)
-            sum[i]=coefficient1[i]+coefficient2[i];
-        for(j=i; j<power1+1; j++)
-            sum[j]=coefficient1[j];
-    }
-    else
-    {
-        for( i=0; i<power1+1; i++)
-            sum[i]=coefficient1[i]+coefficient2[i];
-        for( j=i; j<power2+1; j++)
-            sum[j]=coefficient2[j];
-    }
-    return *sum;
+public:
+    explicit ConP(int power);
+    ConP(const ConP &org);
+    ConP &operator=(const ConP &org);
+
+    ~ConP();
+    ConP operator*(const ConP &org);
+    ConP operator+(const ConP &org);
+    ConP derivative(const ConP &org);
+    ConP integral(const ConP &org);
+    friend std::istream &operator >> (std::istream &in, const ConP &org);
+    friend std::ostream &operator << (std::ostream &out, const ConP &org);
+private:
+    ConP(const Polinom &org);
+
+};
+
+ConP::ConP(int power):
+    Polinom(power)
+{
+
 }
 
-double derivative ( double *coefficient, int power, double *temp )
+ConP::ConP(const ConP &org):
+    Polinom(org)
 {
-    int k=power;
-    int j=power;
-    for (int i=k-1; i>=0; --i)
-    {
-        temp[i]=coefficient[j]*j;
-        --j ;
-    }
-    return *temp;
+
 }
 
-void input(double *coefficient, int power)
+ConP::ConP(const Polinom &org):
+    Polinom(org)
 {
-    for(int i=power; i>=0; --i)
-    {
-        cout<<"x^"<<i<<":";
-        cin>>coefficient[i];
-    }
+
 }
 
-void output(double *coefficient, int power)
+ConP &ConP::operator=(const ConP &org)
 {
+    Polinom::operator=(org);
+    return *this;
+}
+
+ConP ConP::operator+(const ConP &org)
+{
+    Polinom::operator+(org);
+    return ConP(Polinom::operator+(org));
+}
+
+ConP ConP::operator*(const ConP &org)
+{
+    Polinom::operator*(org);
+    return ConP(Polinom::operator*(org));
+}
+
+
+ConP::~ConP()
+{
+
+}
+
+ConP ConP::derivative(const ConP &org)
+{
+    return ConP(Polinom::derivative(org));
+}
+
+ConP ConP::integral(const ConP &org)
+{
+    return ConP(Polinom::integral(org));
+}
+
+
+std::ostream &operator<<(std::ostream &out, const ConP &org)
+{
+    int power = org.get_power();
+    double *coefficient = org.get_coef();
     for(int i=power; i>=0; --i)
     {
         switch(i)
         {
         case 0:
-            cout<<coefficient[i];
+            out<<coefficient[i];
             break;
         case 1:
-            cout<<coefficient[i]<<"x"<<"+";
+            out<<coefficient[i]<<"x"<<"+";
             break;
         default:
-            cout<<coefficient[i]<<"x^"<<i<<"+";
+            out<<coefficient[i]<<"x^"<<i<<"+";
             break;
         }
     }
-    cout<<endl;
+    out<<"\n";
+    return out;
 }
 
-double multiplication(double *coefficient1, double *coefficient2, int power1,int power2, double *coefficient)
+std::istream& operator>>(std::istream &in, const ConP &org)
 {
-    for(int i=power1; i>=0; --i)
-        for(int j=power2; j>=0; --j)
-            coefficient[i+j]+=coefficient1[i]*coefficient2[j];
-    return *coefficient;
-}*/
-
+    int power = org.get_power();
+    double *coefficient = org.get_coef();
+    for(int i=power; i>=0; --i)
+    {
+        std::cout<<"x^"<<i<<":";
+        in>>coefficient[i];
+    }
+    return in;
+}
 int main()
 {
-
-    /*int power1;
-    int power2;
-    cout<<"Введите степень полинома"<<endl;
-    cin>>power1;
-    double *coefficient1=new double[power1+1];
-    input(coefficient1, power1);
-    output(coefficient1, power1);
-
-
-    cout<<"Введите степень полинома"<<endl;
-    cin>>power2;
-    double *coefficient2=new double[power2+1];
-    input(coefficient2, power2);
-    output(coefficient2, power2);
-
-    double *temp=new double[power2+1];
-    derivative(coefficient2, power2, temp);
-    cout<<"Производная от ";
-    output(coefficient2, power2);
-    cout<<"равна ";
-    output(temp, power2-1);
-
-
-    double *coefficient3=new double[power1+power2+1];
-    multiplication(coefficient1, coefficient2, power1, power2, coefficient3);
-    cout<<"Произведение ";
-    output(coefficient3, (power1+power2));
-    delete [] coefficient3;
-    int power;
-    if(power1>power2)
-        power=power1;
-    else
-        power=power2;
-    double *temp1=new double[power+1];
-
-    addition(coefficient1, coefficient2,power1,power2, temp1);
-    output(temp1, power);
-
-
-
-
-    delete [] temp;
-    delete [] temp1;
-    delete [] coefficient1;
-    delete [] coefficient2;
-    delete [] coefficient3;
-
-
-
-    */
-    Polinom a(1);
+    ConP a(2), b(2);
     cin>>a;
-    cout<<a;
-    Polinom b(1);
     cin>>b;
-    cout<<b;
-   Polinom c(2);
-    std::cout<<"Произведение ";
-    c=a*b;
-    cout<<c;
-    cout<<endl;
-    Polinom d(1);
-    d=a+b;
-    std::cout<<"Сумма ";
-    cout<<d;
-    Polinom e(2);
-    e.derivative(e);
-cin>>e;
-    cout<<e;
-   std::cout<<"Производная ";
-   cout<<e;
+    ConP c(2);
+    ConP d(4);
+    c=a+b;
+    d=a*b;
+    cout<<"Первый полином: "<<a<<endl;
+    cout<<"Второй полином: "<<b<<endl;
+    cout<<"Сумма: "<<c<<endl;
+    cout<<"Произведение: "<<d<<endl;
+    ConP e(1);
+    ConP f(3);
+    e=a.derivative(a);
+    f=a.integral(a);
+    cout<<"Производная: "<<e<<endl;
+    cout<<"Интеграл: "<<f<<endl;
+
+
     return 0;
 }
 
